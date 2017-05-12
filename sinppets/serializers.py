@@ -1,9 +1,10 @@
 # Author:xubojoy
 from rest_framework import serializers
 from sinppets.models import Snippet,LANGUANGE_CHOICES,STYLE_CHOICES
+from django.contrib.auth.models import User
 
 class SnippetSerializer(serializers.ModelSerializer):
-    pk = serializers.IntegerField(read_only=True)
+    id = serializers.IntegerField(read_only=True)
     title = serializers.CharField(required=False,allow_blank=True,max_length=100)
     code = serializers.CharField(style={'base_template':'textarea.html'})
     linenos = serializers.BooleanField(required=False)
@@ -30,4 +31,14 @@ class SnippetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Snippet
-        fields = ('pk', 'title', 'code', 'linenos', 'language', 'style')
+        owner = serializers.ReadOnlyField(source='owner.id')
+        print(owner.source)
+        fields = ('id', 'title', 'code', 'linenos', 'language', 'style','owner',)
+
+
+
+class UserSerializer(serializers.ModelSerializer):
+    snippets = serializers.PrimaryKeyRelatedField(many=True,queryset=Snippet.objects.all())
+    class Meta:
+        model = User
+        fields = ('id','username','snippets',)
